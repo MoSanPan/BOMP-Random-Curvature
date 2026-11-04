@@ -70,7 +70,7 @@ figures/                       Paper figures in PDF format
 docs/                          Experiment details and reference figure values
 ```
 
-`docs/paper_figure_values.json` records the exact x coordinates, means, and intervals used in the three empirical figures. Replotting checks these values. Figure 1 displays mean bars without error bars; the intervals remain in the saved results. Figure 2 uses separate logarithmic Y-axis ranges and places panel labels below the plots. Its curves compare analytical population-risk upper bounds, not measured algorithm performance; formulas, parameters, and numeric values are documented in `docs/theoretical_bounds_settings.json` and `docs/theoretical_bounds.csv`. Figure font selection prefers Times New Roman, then Liberation Serif, then DejaVu Serif. Font availability and PDF metadata can change the rendered files' bytes without changing the plotted numbers.
+`docs/paper_figure_values.json` records the exact x coordinates, means, and intervals used in the three empirical figures. Replotting checks these values. Figure 1 displays mean bars without error bars; the intervals remain in the saved results. Figure 2 uses separate logarithmic Y-axis ranges and places panel labels below the plots. Its three curves compare directional, optimized Frobenius, and operator-norm population-risk upper bounds, not measured algorithm performance; formulas, parameters, and numeric values are documented in `docs/theoretical_bounds_settings.json` and `docs/theoretical_bounds.csv`. Figure font selection prefers Times New Roman, then Liberation Serif, then DejaVu Serif. Font availability and PDF metadata can change the rendered files' bytes without changing the plotted numbers.
 
 ## Data and interpretation
 

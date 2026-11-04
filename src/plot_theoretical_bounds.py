@@ -26,6 +26,9 @@ directional = np.full(q.shape, directional_stat + directional_priv, dtype=float)
 frobenius_diag = np.full(q.shape, h / (mu**2 * np.sqrt(n))
                          + 2 * h / (mu**2 * n * epsilon), dtype=float)
 frobenius_two = np.sqrt(q) * frobenius_diag
+operator_stat = h / (mu * (mu + h / 2)) * np.minimum(
+    1.0, np.sqrt(2 * np.log(2 * q) / n))
+operator_bound = operator_stat + directional_priv
 
 # Check the plotted expressions against the primitive constants in Section IV.C.
 sigma_h = h * np.sqrt(q) / 2
@@ -37,6 +40,12 @@ for stability, curve in [(1 / (mu**2 * np.sqrt(q)), frobenius_diag),
 v_q = h / (2 * mu * (mu + h / 2))
 omega_q = 2 * h / mu**2
 np.testing.assert_allclose(directional, 2 * v_q / np.sqrt(n) + r * omega_q / (n * epsilon))
+operator_discrepancy = (h / 2) * np.minimum(1.0, np.sqrt(2 * np.log(2 * q) / n))
+centered_stability = 1 / (mu * (mu + h / 2))
+operator_sensitivity = h / (mu**2 * n)
+np.testing.assert_allclose(operator_bound,
+                           2 * centered_stability * operator_discrepancy
+                           + 2 * r * operator_sensitivity / epsilon)
 
 FONT = next((name for name in ('Times New Roman', 'Liberation Serif', 'DejaVu Serif')
              if any(font.name == name for font in font_manager.fontManager.ttflist)), 'DejaVu Serif')
@@ -51,10 +60,12 @@ fig.subplots_adjust(left=.095, right=.98, bottom=.235, top=.84, wspace=.42)
 for ax, global_curve, title, ticks, ymax in zip(
         axes, [frobenius_diag, frobenius_two],
         ['(a) Diagonal', '(b) Two-basis'],
-        [[.02, .03, .04, .05], [.02, .05, .1, .2, .5]], [.05, .5]):
+        [[.02, .03, .05, .1], [.02, .05, .1, .2, .5]], [.1, .5]):
     ax.plot(q, directional, 'o-', color='#2166A0', label='Directional bound',
             linewidth=1.6, markersize=5, markerfacecolor='white')
     ax.plot(q, global_curve, 's--', color='#CC702A', label='Optimized Frobenius bound',
+            linewidth=1.6, markersize=5, markerfacecolor='white')
+    ax.plot(q, operator_bound, '^-.', color='#27866A', label='Operator-norm bound',
             linewidth=1.6, markersize=5, markerfacecolor='white')
     ax.set_xscale('log', base=2)
     ax.set_yscale('log')
@@ -72,7 +83,8 @@ for ax, global_curve, title, ticks, ymax in zip(
     ax.text(.5, -.29, title, transform=ax.transAxes,
             ha='center', va='top', fontsize=11)
 fig.legend(*axes[0].get_legend_handles_labels(), loc='upper center',
-           bbox_to_anchor=(.54, .985), ncol=2, frameon=False)
+           bbox_to_anchor=(.51, .985), ncol=3, frameon=False,
+           fontsize=9, columnspacing=1.2, handlelength=2.2, handletextpad=.5)
 fig.savefig(OUT / 'theoretical_bounds.pdf')
 fig.savefig(OUT / 'theoretical_bounds.png', dpi=300)
 plt.close(fig)
@@ -80,19 +92,23 @@ plt.close(fig)
 with (OUT / 'theoretical_bounds.csv').open('w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['family', 'q', 'directional_bound', 'optimized_frobenius_bound',
-                     'frobenius_over_directional'])
+                     'frobenius_over_directional', 'operator_norm_bound',
+                     'operator_over_directional'])
     for family, curve in [('diagonal', frobenius_diag), ('two_basis', frobenius_two)]:
-        for dimension, direct, global_bound in zip(q, directional, curve):
-            writer.writerow([family, int(dimension), direct, global_bound, global_bound/direct])
+        for dimension, direct, global_bound, op_bound in zip(q, directional, curve, operator_bound):
+            writer.writerow([family, int(dimension), direct, global_bound, global_bound/direct,
+                             op_bound, op_bound/direct])
 metadata = {
     'kind': 'Analytical population-risk upper-bound comparison; not empirical risk',
-    'source': 'main.tex, Section IV.C, ext:eq:directrisk and thm:publicupper',
+    'source': 'main.tex, Section IV.C, ext:eq:directrisk, eq:operatorrisk and thm:publicupper',
     'parameters': {'n': n, 'mu': mu, 'h': h, 'epsilon': epsilon, 'r': r, 'q': q.tolist()},
     'directional': 'h/(mu*(mu+h/2)*sqrt(n)) + 2*h/(mu^2*n*epsilon)',
     'frobenius_diagonal': 'h/(mu^2*sqrt(n)) + 2*h/(mu^2*n*epsilon)',
     'frobenius_two_basis': 'sqrt(q) * frobenius_diagonal',
-    'axes': 'Both panels use logarithmic axes, with independent y-axis ranges: diagonal [0.015, 0.05], two-basis [0.015, 0.5].',
-    'scope': 'Explicit, uncapped bounds in the manuscript; no uncertainty intervals.',
+    'operator_norm': 'h/(mu*(mu+h/2))*min(1,sqrt(2*log(2*q)/n)) + 2*h/(mu^2*n*epsilon)',
+    'operator_reference': 'Tropp (2012), User-Friendly Tail Bounds for Sums of Random Matrices, doi:10.1007/s10208-011-9099-z; scalar-mgf Golden-Thompson derivation in Section IV.C.',
+    'axes': 'Both panels use logarithmic axes, with independent y-axis ranges: diagonal [0.015, 0.1], two-basis [0.015, 0.5].',
+    'scope': 'Explicit bounds in the manuscript; operator-norm statistical term includes its deterministic cap; no uncertainty intervals.',
     'interpretation': 'The comparison concerns upper-bound analyses with their respective Gibbs calibrations, not measured superiority of an algorithm.',
 }
 (OUT / 'theoretical_bounds_settings.json').write_text(json.dumps(metadata, indent=2), encoding='utf-8')
@@ -100,3 +116,5 @@ print('Directional bound:', directional[0])
 print('Diagonal Frobenius bound:', frobenius_diag[0])
 print('Two-basis Frobenius bounds:', frobenius_two.tolist())
 print('Two-basis bound ratios:', (frobenius_two / directional).tolist())
+print('Operator-norm bounds (both families):', operator_bound.tolist())
+print('Operator-to-directional ratios:', (operator_bound / directional).tolist())

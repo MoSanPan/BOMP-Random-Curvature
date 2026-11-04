@@ -11,8 +11,11 @@ This deterministic plot evaluates the full statistical-plus-privacy upper bounds
 - Directional bound, both families: h/[mu*(mu+h/2)*sqrt(n)] + 2*h/(mu^2*n*epsilon).
 - Optimized Frobenius bound, diagonal: h/(mu^2*sqrt(n)) + 2*h/(mu^2*n*epsilon).
 - Optimized Frobenius bound, two-basis: sqrt(q) times the diagonal Frobenius bound.
+- Operator-norm bound, both families: h/[mu*(mu+h/2)] * min(1, sqrt(2*log(2*q)/n)) + 2*h/(mu^2*n*epsilon).
 
-The directional bound is 0.02278645833 and the diagonal Frobenius bound is 0.033203125. The two-basis Frobenius-to-directional ratio ranges from 4.1214 to 16.4857. These are ratios of theoretical bounds, not measured utility improvements. Both axes are logarithmic; the panels have independent vertical ranges. The plotting script checks the expressions against the primitive variance, diameter, and stability constants.
+The operator-norm benchmark uses the sharp global stability constant 1/mu^2 for privacy and the population-centered constant 1/[mu*(mu+h/2)] for utility. Its privacy term matches the directional bound. For independent fair-bit records, the centered matrix has scalar moment generating function cosh(theta*h/2)*I. Iterated conditional Golden-Thompson bounds give the displayed logarithmic statistical term; the minimum also uses the deterministic fluctuation bound h/2. See Tropp (2012), *User-Friendly Tail Bounds for Sums of Random Matrices*, Foundations of Computational Mathematics 12:389-434, https://doi.org/10.1007/s10208-011-9099-z.
+
+The directional bound is 0.02278645833 and the diagonal Frobenius bound is 0.033203125. The two-basis Frobenius-to-directional ratio ranges from 4.1214 to 16.4857. The operator-norm bound ranges from 0.05101187594 to 0.07133267593 in both families, with operator-to-directional ratios 2.2387 to 3.1305. For diagonal curvature, the optimized Frobenius bound is tighter than this operator-norm bound. These are ratios of theoretical bounds, not measured utility improvements. Both axes are logarithmic; the panels have independent vertical ranges. The plotting script checks the expressions against the primitive variance, diameter, and stability constants.
 
 ## Block geometry
 

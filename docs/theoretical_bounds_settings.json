@@ -1,6 +1,6 @@
 {
   "kind": "Analytical population-risk upper-bound comparison; not empirical risk",
-  "source": "main.tex, Section IV.C, ext:eq:directrisk and thm:publicupper",
+  "source": "main.tex, Section IV.C, ext:eq:directrisk, eq:operatorrisk and thm:publicupper",
   "parameters": {
     "n": 1024,
     "mu": 1.0,
@@ -18,7 +18,9 @@
   "directional": "h/(mu*(mu+h/2)*sqrt(n)) + 2*h/(mu^2*n*epsilon)",
   "frobenius_diagonal": "h/(mu^2*sqrt(n)) + 2*h/(mu^2*n*epsilon)",
   "frobenius_two_basis": "sqrt(q) * frobenius_diagonal",
-  "axes": "Both panels use logarithmic axes, with independent y-axis ranges: diagonal [0.015, 0.05], two-basis [0.015, 0.5].",
-  "scope": "Explicit, uncapped bounds in the manuscript; no uncertainty intervals.",
+  "operator_norm": "h/(mu*(mu+h/2))*min(1,sqrt(2*log(2*q)/n)) + 2*h/(mu^2*n*epsilon)",
+  "operator_reference": "Tropp (2012), User-Friendly Tail Bounds for Sums of Random Matrices, doi:10.1007/s10208-011-9099-z; scalar-mgf Golden-Thompson derivation in Section IV.C.",
+  "axes": "Both panels use logarithmic axes, with independent y-axis ranges: diagonal [0.015, 0.1], two-basis [0.015, 0.5].",
+  "scope": "Explicit bounds in the manuscript; operator-norm statistical term includes its deterministic cap; no uncertainty intervals.",
   "interpretation": "The comparison concerns upper-bound analyses with their respective Gibbs calibrations, not measured superiority of an algorithm."
 }
