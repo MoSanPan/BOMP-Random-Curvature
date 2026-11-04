@@ -120,4 +120,7 @@ def check_figure_values(root, figure_dir):
         else:
             np.testing.assert_allclose(a, b, rtol=1e-9, atol=1e-12)
     visit(expected, actual)
-    return {"figures": len(expected), "means_and_intervals_match": True}
+    theoretical = compare_rows(read(root/"docs/theoretical_bounds.csv"),
+                               read(figure_dir/"theoretical_bounds.csv"), ["family", "q"])
+    return {"figures": len(expected) + 1, "empirical_figures": len(expected),
+            "means_and_intervals_match": True, "theoretical_bounds": theoretical}

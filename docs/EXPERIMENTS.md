@@ -4,11 +4,21 @@
 
 `response_trials.csv` stores the actual response norm error, its sqrt(n)-scaled value, directional and Frobenius fluctuations, and the directional bound for each trial. `sweep=q` supplies Figure 1; `sweep=n` supplies the additional fixed-dimension scaling check. Exact binomial sufficient statistics generate each empirical Hessian; they are not a Gaussian approximation.
 
+## Theoretical upper bounds (Figure 2)
+
+This deterministic plot evaluates the full statistical-plus-privacy upper bounds in Section IV.C, using the respective Gibbs calibrations. It does not measure empirical excess risk. Set n=1024, mu=h=epsilon=1, decision dimension r=1, and lower dimension q in {8, 16, 32, 64, 128}.
+
+- Directional bound, both families: h/[mu*(mu+h/2)*sqrt(n)] + 2*h/(mu^2*n*epsilon).
+- Optimized Frobenius bound, diagonal: h/(mu^2*sqrt(n)) + 2*h/(mu^2*n*epsilon).
+- Optimized Frobenius bound, two-basis: sqrt(q) times the diagonal Frobenius bound.
+
+The directional bound is 0.02278645833 and the diagonal Frobenius bound is 0.033203125. The two-basis Frobenius-to-directional ratio ranges from 4.1214 to 16.4857. These are ratios of theoretical bounds, not measured utility improvements. Both axes are logarithmic; the panels have independent vertical ranges. The plotting script checks the expressions against the primitive variance, diameter, and stability constants.
+
 ## Block geometry
 
 `block` adds independent radial noise per block; `ambient` adds ambient radial noise. Both project to the same product of balls and apply their own public-bound zero fallback. `nonprivate` uses the empirical mean with the same projection and scaling, and `public_zero` is the zero reference. The exact population loss is evaluated through the population inverse matrix.
 
-The utility law has a uniform block index and independent signs with positive probability 3/4 within the selected block. Figure 2 divides excess risk by s/sqrt(ell), with s = h/(2*mu+h). The `ungated_risk` column is a diagnostic before the public zero fallback. The separate centered-moment calculation uses fair signs and should not be interpreted as a moment calculation for the biased utility law.
+The utility law has a uniform block index and independent signs with positive probability 3/4 within the selected block. Figure 3 divides excess risk by s/sqrt(ell), with s = h/(2*mu+h). The `ungated_risk` column is a diagnostic before the public zero fallback. The separate centered-moment calculation uses fair signs and should not be interpreted as a moment calculation for the biased utility law.
 
 ## Calibration methods
 
@@ -16,7 +26,7 @@ The utility law has a uniform block index and independent signs with positive pr
 | --- | --- |
 | `coefficient` | Algorithm 1: perturb the r-dimensional fitted coefficient, normalize, and apply the public gate |
 | `output_tight` | Add tight radial noise to the full r+1 fitted response, then normalize its final r coordinates and apply the gate |
-| `em_tight_normalized` | Sample the tight exponential density on the r-ball, normalize, and apply the gate; the exponential curve in Figure 3 |
+| `em_tight_normalized` | Sample the tight exponential density on the r-ball, normalize, and apply the gate; the exponential curve in Figure 4 |
 | `em_tight` | The same exponential sample before normalization, with the same gate; diagnostic |
 | `output_cms2011` | Output perturbation with twice the tight noise scale; diagnostic, not the plotted output curve |
 | `nonprivate` | Normalize the fitted coefficient without adding noise |

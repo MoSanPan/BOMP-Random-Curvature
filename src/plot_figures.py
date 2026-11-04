@@ -11,7 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import NullLocator, FixedLocator, ScalarFormatter
+from matplotlib.ticker import NullLocator, FixedLocator, FixedFormatter
 
 import argparse
 from matplotlib import font_manager
@@ -49,15 +49,24 @@ plt.rcParams.update({
 })
 BLUE, ORANGE, GREEN = '#2166A0', '#CC702A', '#398575'
 
-def canvas(grid, xlabel, ylabel, logy=False):
-    fig = plt.figure(figsize=(3.5, 2.22))
-    ax = fig.add_axes([.17, .195, .80, .665])
-    ax.set_xscale('log', base=2)
+def canvas(grid, xlabel, ylabel, logy=False, logx=True):
+    # A slightly taller single-column canvas keeps the curves from looking
+    # vertically compressed after inclusion in the IEEE two-column layout.
+    fig = plt.figure(figsize=(3.48, 2.62))
+    ax = fig.add_axes([.17, .205, .80, .645])
+    if logx:
+        ax.set_xscale('log', base=2)
     if logy:
         ax.set_yscale('log')
-    ax.set_xticks(grid, [str(x) for x in grid])
-    span = np.log2(grid[-1] / grid[0])
-    ax.set_xlim(grid[0] / 2**(.045*span), grid[-1] * 2**(.045*span))
+    if logx:
+        ax.xaxis.set_major_locator(FixedLocator(grid))
+        ax.xaxis.set_major_formatter(FixedFormatter([str(x) for x in grid]))
+        span = np.log2(grid[-1] / grid[0])
+        ax.set_xlim(grid[0] / 2**(.045*span), grid[-1] * 2**(.045*span))
+    else:
+        positions = np.arange(len(grid))
+        ax.set_xticks(positions, [str(x) for x in grid])
+        ax.set_xlim(-.55, len(grid)-.45)
     ax.xaxis.set_minor_locator(NullLocator())
     ax.yaxis.set_minor_locator(NullLocator())
     ax.set_axisbelow(True)
@@ -66,6 +75,15 @@ def canvas(grid, xlabel, ylabel, logy=False):
     ax.set_ylabel(ylabel)
     ax.tick_params(pad=2)
     return fig, ax
+
+def bar_errors(ax, rows, xfield, field, label, color, offset):
+    x = [int(r[xfield]) for r in rows]
+    y = np.array([float(r[field+'_mean']) for r in rows])
+    e = np.array([1.96*float(r[field+'_se']) for r in rows])
+    positions = np.arange(len(rows)) + offset
+    ax.bar(positions, y, width=.34, label=label, color=color, alpha=.82,
+           edgecolor=color, linewidth=.7)
+    return {'x': x, 'mean': y.tolist(), 'lo95': (y-e).tolist(), 'hi95': (y+e).tolist()}
 
 def finish(fig, ax, name, points):
     handles, labels = ax.get_legend_handles_labels()
@@ -99,16 +117,16 @@ def errors(ax, rows, xfield, field, label, color, marker, line, size=3.5):
 
 response = read(SOURCES[0])
 grid = [8,16,32,64,128]
-fig, ax = canvas(grid, r'Lower dimension $q$', r'Scaled response error $\sqrt{n}\,E_S$')
+fig, ax = canvas(grid, r'Lower dimension $q$', r'Scaled response error $\sqrt{n}\,E_S$', logx=False)
 points = {}
-for model,label,color,marker,line in [('diagonal','Diagonal',BLUE,'o','-'),
-                                      ('two_basis','Two-basis',ORANGE,'s','--')]:
+for model,label,color,offset in [('diagonal','Diagonal',BLUE,-.18),
+                                 ('two_basis','Two-basis',ORANGE,.18)]:
     rows = sorted([r for r in response if r['sweep']=='q' and r['model']==model], key=lambda r:int(r['q']))
     assert [int(r['q']) for r in rows] == grid
-    points[model] = errors(ax,rows,'q','scaled_response',label,color,marker,line)
+    points[model] = bar_errors(ax,rows,'q','scaled_response',label,color,offset)
 ax.axhline(1/3, color='#737373', linewidth=.9, linestyle=(0,(4,3)), label=r'Bound $V_Q$')
-ax.set_ylim(.16,.36)
-ax.set_yticks([.16,.20,.24,.28,.32,.36])
+ax.set_ylim(0,.36)
+ax.set_yticks([0,.1,.2,.3,.36])
 points['bound'] = 1/3
 finish(fig,ax,'actual_response',points)
 
@@ -116,8 +134,8 @@ blocks = read(SOURCES[1])
 grid = [1,4,16,64,256]
 fig, ax = canvas(grid, r'Number of blocks $\ell$', 'Normalized excess risk')
 points = {}
-for method,label,color,marker,line in [('block','Block noise',BLUE,'o','-'),
-    ('ambient','Ambient noise',ORANGE,'s','--'),('nonprivate','Non-private',GREEN,'^','-.')]:
+for method,label,color,marker,line in [('block','Block-aware',BLUE,'o','-'),
+    ('ambient','Ambient',ORANGE,'s','--'),('nonprivate','Non-private',GREEN,'^','-.')]:
     rows = sorted([r for r in blocks if r['method']==method], key=lambda r:int(r['ell']))
     assert [int(r['ell']) for r in rows] == grid
     points[method] = errors(ax,rows,'ell','normalized_risk',label,color,marker,line)
@@ -131,7 +149,7 @@ fig, ax = canvas(grid, r'Sample size $n$', 'Population excess risk', logy=True)
 points = {}
 for key,label,color,marker,line,size in [
     ('coefficient','Algorithm 1',BLUE,'o','-',4.6),
-    ('output_tight','Output pert.',ORANGE,'s','--',2.8),
+    ('output_tight','Output perturb.',ORANGE,'s','--',2.8),
     ('em_tight_normalized','Exponential',GREEN,'^','-.',3.6)]:
     rows = sorted([r for r in utility if r['method']==key and r['family']=='dense_signs'
         and int(r['r'])==16 and float(r['eta'])==.3 and float(r['epsilon'])==1

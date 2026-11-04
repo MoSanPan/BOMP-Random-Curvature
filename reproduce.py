@@ -55,6 +55,8 @@ def main():
                 report["comparison_with_saved_results"] = verification.compare_results(ROOT/"results", data)
         subprocess.run([sys.executable, str(ROOT/"src/plot_figures.py"),
                         "--results", str(data), "--out", str(out/"figures")], check=True)
+        subprocess.run([sys.executable, str(ROOT/"src/plot_theoretical_bounds.py"),
+                        "--out", str(out/"figures")], check=True)
         if args.mode != "smoke":
             report["figure_values"] = verification.check_figure_values(ROOT, out/"figures")
     report["elapsed_seconds"] = time.perf_counter()-started

@@ -1,0 +1,24 @@
+{
+  "kind": "Analytical population-risk upper-bound comparison; not empirical risk",
+  "source": "main.tex, Section IV.C, ext:eq:directrisk and thm:publicupper",
+  "parameters": {
+    "n": 1024,
+    "mu": 1.0,
+    "h": 1.0,
+    "epsilon": 1.0,
+    "r": 1,
+    "q": [
+      8,
+      16,
+      32,
+      64,
+      128
+    ]
+  },
+  "directional": "h/(mu*(mu+h/2)*sqrt(n)) + 2*h/(mu^2*n*epsilon)",
+  "frobenius_diagonal": "h/(mu^2*sqrt(n)) + 2*h/(mu^2*n*epsilon)",
+  "frobenius_two_basis": "sqrt(q) * frobenius_diagonal",
+  "axes": "Both panels use logarithmic axes, with independent y-axis ranges: diagonal [0.015, 0.05], two-basis [0.015, 0.5].",
+  "scope": "Explicit, uncapped bounds in the manuscript; no uncertainty intervals.",
+  "interpretation": "The comparison concerns upper-bound analyses with their respective Gibbs calibrations, not measured superiority of an algorithm."
+}
